@@ -30,7 +30,6 @@ function button:draw()
 end
 --#endregion
 
---#region function wrap
 ---Wrapps text to boundraries
 ---@param text string @the string to wrap
 ---@param max number @the maximum characters per line
@@ -81,4 +80,3 @@ local function wrap(text,max,respectWord)
         return wrapped
     end
 end
---#endregion
