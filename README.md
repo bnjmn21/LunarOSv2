@@ -9,3 +9,5 @@ A operating system for the cc:tweaked `advanced portable computer`.
 3. follow the instructions on the screen  
 
 ## More information on the wiki
+
+[view the wiki](https://github.com/bnjmn21/LunarOSv2/wiki)
