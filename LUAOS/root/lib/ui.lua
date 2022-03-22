@@ -1,3 +1,5 @@
+--#region helper functions
+
 ---Wrapps text to boundraries
 ---@param text string @the string to wrap
 ---@param max number @the maximum characters per line
@@ -49,18 +51,27 @@ local function wrap(text,max,respectWord)
     end
 end
 
---#region objects
+---Clears an Area
+local function clearArea(x,y,dx,dy,bg,display)
+    display.setBackgroundColor(bg)
+    for i=1,dy,1 do
+        display.setCursorPos(x,y+i-1)
+        display.write(string.rep(" ",dx))
+    end
+end
+
+--#endregion
+--#region class button
 ---@class button
----@field id number
 ---@field x number
 ---@field y number
 ---@field dx number
 ---@field dy number
----@field bgc number
+---@field bg number
 ---@field txtc number
 ---@field txt string
 ---@field display table
-local button = {}
+local button = {x=0,y=0,dx=1,dy=1,bg=colors.black,txtc=colors.white,txt=""}
 
 ---@param param table @list of parameters for button
 ---@return table @the button object
@@ -68,8 +79,9 @@ function button:new(param)
     local obj = {}
     setmetatable(obj, self)
     self.__index = self
+
     for i,o in pairs(param) do
-        self[i] = o
+        self[i] = o or self[i]
     end
     return obj
 end
@@ -78,20 +90,116 @@ end
 ---@param UI table @the UI
 function button:draw(UI)
     local wrapped = wrap(self.txt,self.dx)
-    self.display.setBackgroundColor(self.bgc)
+    self.display.setBackgroundColor(self.bg)
     self.display.setTextColor(self.txtc)
     for i in pairs(wrapped) do
         if i > self.dy then break end
-        if self.y+UI.Yscroll+i-1 > UI.dy then break end
-        self.display.setCursorPos(self.x,UI.y+self.y+UI.Yscroll+i-1)
-        self.display.write(string.sub(wrapped[i],1,UI.dx-self.x))
+        if self.y+UI.param.Yscroll+i-1 > UI.param.dy then break end
+        UI.param.display.setCursorPos(self.x,UI.param.y+self.y+UI.param.Yscroll+i-1)
+        UI.param.display.write(string.sub(wrapped[i],1,UI.param.dx-self.x))
     end
 end
 
----
-function button:checkEvent(UI,event)
-    if event[3] >= self.x and event[3] < self.x+self.dx and event[4] >= self.y+UI.Yscroll and event[4] < self.y+self.dy+UI.Yscroll then
-        os.queueEvent("UI_button_down",self.id)
+function button:event(UI, event)
+    local pressed = false
+    if event[1] == "mouse_click" then
+        if event[3] >= self.x and event[3] < self.x+self.dx and event[4] >= self.y+UI.param.Yscroll and event[4] < self.y+self.dy+UI.param.Yscroll then
+            pressed = true
+        end
+    end
+
+    if pressed then
+        os.queueEvent("appevent",{event="ui:button_pressed",button=event[2]})
     end
 end
+--#endregion
+
+--#region class switch
+
+---@class switch
+---@field x number
+---@field y number
+---@field dx number
+---@field state boolean
+---@field txtOn string
+---@field txtOff string
+---@field type string
+local switch = {x=1,y=1,dx=1,state=false,txtOn="on",txtOff="off",type="apple_switch-light_gray-lime"}
+
+---@param param table @list of parameters for switch
+---@return table @the switch object
+function switch:new(param)
+    local obj = {}
+    setmetatable(obj, self)
+    self.__index = self
+    for i,o in pairs(param) do
+        self[i] = o or self[i]
+    end
+    return obj
+end
+
+function switch:draw(UI)
+    if type == "apple_switch-light_gray-lime" then
+        UI.param.display.setBackgroundColor(UI.param.bg)
+        UI.param.display.setTextColor(self.state and colors.lime or colors.light_gray)
+        UI.param.display.setCursorPos(self.x,self.y+UI.param.Yscroll)
+        UI.param.display.write(string.rep("-",self.dx+1))
+        UI.param.display.setBackgroundColor(colors.light_gray)
+        UI.param.display.setTextColor(colors.white)
+        UI.param.display.setCursorPos(self.x + self.state and self.dx or 0, self.y + UI.param.Yscroll)
+        UI.param.display.write(" ")
+    end
+end
+
+--#endregion
+
+--#region class ui
+
+---@class ui
+---@field name string
+---@field x number
+---@field y number
+---@field dx number
+---@field dy number
+---@field bg number
+---@field Yscroll number
+---@field display table
+local ui = {name="app",x=1,y=1,dx=1,dy=1,bg=colors.black,Yscroll=0,display=term}
+
+---@param param table @list of parameters for ui
+---@param objs table @list of all objects in the ui
+---@return table @the ui object
+function ui:new(param, objs)
+    local obj = {}
+    setmetatable(obj, self)
+    self.__index = self
+    for i,o in pairs(param) do
+        self["param"][i] = o or self["param"][i]
+    end
+    for i,o in pairs(objs) do
+        self["obj"][i] = o or self["obj"][i]
+    end
+    return obj
+end
+
+---draws the UI
+function ui:draw()
+    clearArea(self.x,self.y,self.dx,self.dy,self.bg,self.display)
+    for _,o in pairs(self.objs) do
+        o:draw(self)
+    end
+end
+
+---checks for events
+function ui:event(event)
+    if event[1] == "mouse_click" then
+        if not (event[3] >= self.param.x and event[3] < self.param.x+self.param.dx and event[4]+self.param.Yscroll >= self.param.y and event[4]+self.param.Yscroll < self.param.y+self.param.dy) then
+            return
+        end
+    end
+    for i in pairs(self.objs) do
+        if self["objs"][i]:event(self,event) then return end
+    end
+end
+
 --#endregion

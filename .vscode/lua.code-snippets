@@ -20,13 +20,12 @@
 		"scope": "lua",
 		"prefix": "class",
 		"body": [
-			"local ${1:name} = {}",
 			"function ${1:name}:new(param)",
 			"\tlocal obj = {}",
 			"\tsetmetatable(obj, self)",
 			"\tself.__index = self",
 			"\tfor i,o in pairs(param) do",
-			"\t\tself[i] = o",
+			"\t\tself[i] = o or self[i]",
 			"\tend",
 			"\treturn obj",
 			"end"
