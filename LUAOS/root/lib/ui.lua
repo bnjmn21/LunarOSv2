@@ -61,6 +61,7 @@ local function clearArea(x,y,dx,dy,bg,display)
 end
 
 --#endregion
+
 --#region class button
 ---@class button
 ---@field x number
@@ -148,6 +149,19 @@ function switch:draw(UI)
         UI.param.display.setTextColor(colors.white)
         UI.param.display.setCursorPos(self.x + self.state and self.dx or 0, self.y + UI.param.Yscroll)
         UI.param.display.write(" ")
+    end
+end
+
+function switch:event(UI, event)
+    local toggle = false
+    if event[1] == "mouse_click" then
+        if event[2] == self.x and event[3] >= self.y+UI.param.Yscroll and event[3] < self.y+self.dy+UI.param.Yscroll then
+            toggle = true
+        end
+    end
+    if toggle then
+        self.state = not self.state
+        os.queueEvent("appevent", {event = "ui:switch_pressed", button=event[2]})
     end
 end
 
