@@ -1,0 +1,6 @@
+{
+    "URLs" : {
+        "lib/ui" : "https://raw.githubusercontent.com/bnjmn21/LunarOSv2/master/LUAOS/root/lib/ui.lua",
+        "sys/apphost" : "https://raw.githubusercontent.com/bnjmn21/LunarOSv2/master/root/sys/apphost.lua"
+    }
+}
